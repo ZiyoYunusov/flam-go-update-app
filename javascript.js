@@ -1,6 +1,6 @@
 // Получаем информацию о файле APK
 function getFileInfo() {
-    fetch('app.apk', { method: 'HEAD' })
+    fetch('d:\\FlamGO projects do not delete\\Flam_Go\\flam_go\\build\\app\\outputs\\flutter-apk\\app-release.apk', { method: 'HEAD' })
         .then(response => {
             // Получаем размер файла
             const size = response.headers.get('content-length');
