@@ -1,45 +1,53 @@
-// Получаем информацию о файле APK
-function getFileInfo() {
-    fetch('d:\\FlamGO projects do not delete\\Flam_Go\\flam_go\\build\\app\\outputs\\flutter-apk\\app-release.apk', { method: 'HEAD' })
-        .then(response => {
-            // Получаем размер файла
-            const size = response.headers.get('content-length');
-            if (size) {
-                const sizeMB = (size / (1024 * 1024)).toFixed(2);
-                document.getElementById('fileSize').textContent = sizeMB + ' MB';
-            } else {
-                document.getElementById('fileSize').textContent = 'Н/Д';
-            }
+/**
+ * Fetches APK file metadata (size and last modified date)
+ */
+async function getFileInfo() {
+    const fileSizeElement = document.getElementById('fileSize');
+    const lastUpdatedElement = document.getElementById('lastUpdated');
 
-            // Получаем дату последнего изменения
-            const lastModified = response.headers.get('last-modified');
-            if (lastModified) {
-                const date = new Date(lastModified);
-                const options = { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                };
-                document.getElementById('lastUpdated').textContent = date.toLocaleDateString('ru-RU', options);
-            } else {
-                document.getElementById('lastUpdated').textContent = 'Н/Д';
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка при получении информации о файле:', error);
-            document.getElementById('fileSize').textContent = 'Н/Д';
-            document.getElementById('lastUpdated').textContent = 'Н/Д';
-        });
+    try {
+        // We use relative path to 'app.apk' in the same folder
+        const response = await fetch('app.apk', { method: 'HEAD' });
+        
+        if (!response.ok) throw new Error('File not found');
+
+        // Extract File Size
+        const size = response.headers.get('content-length');
+        if (size) {
+            const sizeMB = (size / (1024 * 1024)).toFixed(1);
+            fileSizeElement.textContent = `${sizeMB} MB`;
+        } else {
+            fileSizeElement.textContent = '---';
+        }
+
+        // Extract Last Modified Date
+        const lastModified = response.headers.get('last-modified');
+        if (lastModified) {
+            const date = new Date(lastModified);
+            lastUpdatedElement.textContent = date.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        } else {
+            lastUpdatedElement.textContent = '---';
+        }
+
+    } catch (error) {
+        console.warn('Metadata fetch failed:', error);
+        fileSizeElement.textContent = '---';
+        lastUpdatedElement.textContent = '---';
+    }
 }
 
-// Запускаем функцию при загрузке страницы
-document.addEventListener('DOMContentLoaded', getFileInfo);
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+    getFileInfo();
 
-// Опционально: добавляем обработчик клика на кнопку скачивания
-document.querySelector('.download-btn').addEventListener('click', function(e) {
-    console.log('Начинается скачивание APK файла...');
-    
-    // Можно добавить аналитику или другую логику
-    // Например, отправить событие в Google Analytics
-    // gtag('event', 'download', { 'event_category': 'APK' });
+    const downloadBtn = document.querySelector('.download-link');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => {
+            console.log('Download initiated...');
+        });
+    }
 });
